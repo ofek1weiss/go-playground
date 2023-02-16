@@ -2,9 +2,7 @@ package main
 
 import (
 	"adventurebook/adventurebook"
-	"adventurebook/server"
-	"log"
-	"net/http"
+	"adventurebook/cli"
 )
 
 func getBooks() map[string]*adventurebook.AdventureBook {
@@ -18,7 +16,8 @@ func getBooks() map[string]*adventurebook.AdventureBook {
 }
 
 func main() {
-	handler := server.NewHandler(getBooks())
-	http.Handle("/", handler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	// handler := server.NewHandler(getBooks())
+	// http.Handle("/", handler)
+	// log.Fatal(http.ListenAndServe(":8080", nil))
+	cli.New(getBooks()["gopher"]).Run()
 }

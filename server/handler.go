@@ -2,6 +2,7 @@ package server
 
 import (
 	"adventurebook/adventurebook"
+	"errors"
 	"html/template"
 	"net/http"
 	"strings"
@@ -10,33 +11,33 @@ import (
 var storyTemplate = template.Must(template.ParseFiles("server/template.html"))
 
 type Handler struct {
-	stories map[string]*adventurebook.AdventureBook
+	books map[string]*adventurebook.AdventureBook
 }
 
-func NewHandler(stories map[string]*adventurebook.AdventureBook) *Handler {
+func NewHandler(books map[string]*adventurebook.AdventureBook) *Handler {
 	return &Handler{
-		stories: stories,
+		books: books,
 	}
 }
 
-func (h *Handler) getArc(r *http.Request) (*adventurebook.StoryArc, bool) {
-	storyName := strings.Trim(r.URL.Path, "/")
-	story, ok := h.stories[storyName]
+func (h *Handler) getArc(r *http.Request) (*adventurebook.StoryArc, error) {
+	bookName := strings.Trim(r.URL.Path, "/")
+	book, ok := h.books[bookName]
 	if !ok {
-		return nil, false
+		return nil, errors.New("book not found")
 	}
 	arcName := r.URL.Query().Get("arc")
 	if arcName == "" {
 		arcName = adventurebook.DEFALUT_ARC_NAME
 	}
-	arc, ok := (*story)[arcName]
-	return arc, ok
+	return book.GetArc(arcName)
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	arc, ok := h.getArc(r)
-	if !ok {
+	arc, err := h.getArc(r)
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(err.Error()))
 		return
 	}
 	storyTemplate.Execute(w, arc)
