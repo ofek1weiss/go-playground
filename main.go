@@ -2,20 +2,15 @@ package main
 
 import (
 	"fmt"
-	"linkparser/linkparser"
-	"os"
+	"linkparser/sitemap"
 )
 
 func main() {
-	file, err := os.Open("examples/4.html")
+	flags := GetFlags()
+	sm := sitemap.Crawl(flags.Domain, flags.Depth)
+	xml, err := sm.ToXML()
 	if err != nil {
 		panic(err)
 	}
-	links, err := linkparser.Parse(file)
-	if err != nil {
-		panic(err)
-	}
-	for _, l := range links {
-		fmt.Println(l)
-	}
+	fmt.Print(xml)
 }
